@@ -1,0 +1,51 @@
+import requests 
+from bs4 import BeautifulSoup 
+from selenium import webdriver 
+from selenium.webdriver.common.keys import Keys 
+import time 
+#import pymysql
+
+#con=pymysql.connect('bike_data.db')
+#cur=connect.cursor()
+
+url = "https://www.cwb.gov.tw/V8/C/W/OBS_Station.html?ID=46692"
+driver = webdriver.Chrome(executable_path ='/Users/Mac/Desktop/Chromedriver')
+driver.get(url)
+
+html = driver.page_source
+soup = BeautifulSoup(html, "html.parser")
+
+temp = soup.find('td').find('span').get_text()
+wind = soup.find('td',{'headers':'w-2'}).find('span',{'class':'wind_1 is-active'}).get_text()
+humid = soup.find('td',{'headers':'hum'}).get_text()
+weather = [temp,wind,humid]
+driver.close()
+
+url="https://tcgbusfs.blob.core.windows.net/blobyoubike/YouBikeTP.json"
+
+r=requests.get(url)
+json_data=r.json()
+bike_stop=json_data['retVal']
+stop_number=['0001','0002','0003','0004','0005','0007','0011','0019','0025','0070','0075','0088','0113','0126','0138','0150','0187','0218','0282','0326']
+#Youbike_data=[]
+
+for stop in stop_number:
+    Stop_name=bike_stop[stop]['sno']
+    TOT=bike_stop[stop]['tot']
+    SBI=bike_stop[stop]['sbi']
+    time=bike_stop[stop]['mday']
+    Youbike_data = [Stop_name,time, TOT, SBI,temp,wind,humid]
+    #Youbike_data.append(Title)  
+    print (Youbike_data)
+    
+    #Q1='''INSERT INTO Youbike_data(Stop_name,time, TOT, SBI,temp,wind,humid)VALUES(?,?,?,?,?,?,?)'''
+    #cur.execute(Q1,tuple(Youbike_data))
+    #con.commit()
+    #con.close()
+    
+    
+
+# schedule.every(5).minutes.do(get_YouBike_data)
+# while True:
+#     schedule.run_pending()
+
